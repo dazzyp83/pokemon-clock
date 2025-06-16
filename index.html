@@ -1,34 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    /* center, if you like */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background: #000;
-  }
-  canvas {
-    /* force the canvas element to 3× size */
-    width: 480px;   /* 160 × 3 */
-    height: 384px;  /* 128 × 3 */
-    /* pixelated up‐scaling rather than blurry */
-    image-rendering: pixelated;
-  }
-</style>
-
   <meta charset="UTF-8" />
   <title>Pokémon Clock</title>
+
+  <!-- single CSS block to scale your 160×128 canvas to 480×384 -->
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #000;
+    }
+    canvas {
+      width: 480px;           /* 160 × 3 */
+      height: 384px;          /* 128 × 3 */
+      image-rendering: pixelated;
+      display: block;
+    }
+  </style>
+
+  <!-- p5.js and your sketch -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
   <script src="sketch.js"></script>
-  <style>
-    body { margin: 0; background: black; }
-    canvas { display: block; margin: auto; }
-  </style>
 </head>
 <body>
 </body>
