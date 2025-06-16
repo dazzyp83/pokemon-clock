@@ -1,8 +1,7 @@
-let bg;
+let bg, gameboyFont;
 let frontSprite, backSprite;
 let frontName, backName;
 let hpFront, hpBack;
-let gameboyFont;
 
 let lastSwapTime = 0;
 const swapInterval = 30 * 60 * 1000; // 30 minutes
@@ -162,9 +161,20 @@ const pokemonList = [
   { file: 'mew.png',         name: 'MEW'         }
 ];
 
+// lookup tables for preloaded images
+let frontImages = {};
+let backImages  = {};
+
 function preload() {
-  bg = loadImage('bg.png');
+  // background & font
+  bg          = loadImage('bg.png');
   gameboyFont = loadFont('PressStart2P-Regular.ttf');
+
+  // preload every sprite into memory
+  for (let p of pokemonList) {
+    frontImages[p.file] = loadImage(`front/${p.file}`);
+    backImages [p.file] = loadImage(`back/${p.file}`);
+  }
 }
 
 function setup() {
@@ -172,53 +182,52 @@ function setup() {
   textFont(gameboyFont);
   noSmooth();
 
-  // initial random swap
   loadRandomPokemon();
   lastSwapTime = millis();
 }
 
 function draw() {
   background(0);
-  // auto‐swap every 30m
+
+  // auto-swap every 30 minutes
   if (millis() - lastSwapTime > swapInterval) {
     loadRandomPokemon();
     lastSwapTime = millis();
   }
 
-  // draw BG
+  // draw background
   image(bg, 0, 0, 160, 128);
 
-  // draw back (your Pokémon)
+  // draw your Pokémon (back) and enemy (front)
   image(backSprite, 11, 32, 50, 50);
+  image(frontSprite,104, 10, 40, 40);
 
-  // draw front (enemy)
-  image(frontSprite, 104, 10, 40, 40);
-
-  // names
+  // draw names
   textSize(6);
   noStroke();
   fill(0);
 
-  // front name (top‐left)
+  // front name, trimmed if too wide
   textAlign(LEFT, TOP);
-  { 
-    let name = frontName, w = textWidth(name);
-    while (w > 60) { name = name.slice(0, -1); w = textWidth(name); }
+  {
+    let name = frontName;
+    while (textWidth(name) > 60) {
+      name = name.slice(0, -1);
+    }
     text(name, 12, 5);
   }
 
-  // back name (bottom‐right)
+  // back name, right-justified
   textAlign(LEFT, TOP);
   {
-    let name = backName, w = textWidth(name);
-    let x = 147 - w;
-    text(name, x, 55);
+    let w = textWidth(backName);
+    text(backName, 147 - w, 55);
   }
 
   // HP labels
   textAlign(RIGHT, TOP);
-  text("HP", 28, 16);
-  text("HP", 88, 65);
+  text('HP', 28, 16);
+  text('HP', 88, 65);
 
   // HP bars
   drawHpBar(30, 16, 50, 5, hpFront);
@@ -227,42 +236,42 @@ function draw() {
   // clock
   textSize(24);
   textAlign(CENTER, CENTER);
-  fill(0);
-  let hrs = nf(hour(), 2), mins = nf(minute(), 2);
-  text(`${hrs}:${mins}`, width/2, 104);
+  let hrs  = nf(hour(), 2),
+      mins = nf(minute(), 2);
+  text(`${hrs}:${mins}`, width / 2, 104);
 }
 
 // pill-shaped HP bar
 function drawHpBar(x,y,w,h,pct) {
-  pct = constrain(pct,0,1);
-  // fill underneath
-  noStroke(); fill(100);
-  rect(x,y,pct*w,h,h);
-  // outline
-  noFill(); stroke(0); strokeWeight(1);
-  rect(x,y,w,h,h);
+  pct = constrain(pct, 0, 1);
+  noStroke();
+  fill(100);
+  rect(x, y, pct * w, h, h);
+  noFill();
+  stroke(0);
+  strokeWeight(1);
+  rect(x, y, w, h, h);
 }
 
-// pick two different random Pokémon
+// pick two different random Pokémon and assign sprites
 function loadRandomPokemon() {
   let i = floor(random(pokemonList.length));
-  let j = floor(random(pokemonList.length));
-  while (j === i) j = floor(random(pokemonList.length));
+  let j;
+  do { j = floor(random(pokemonList.length)); } while (j === i);
 
-  let front = pokemonList[i], back = pokemonList[j];
-  frontName = front.name;
-  backName = back.name;
-  hpFront = random(0.3,1);
-  hpBack  = random(0.3,1);
-
-  loadImage(`front/${front.file}`, img=> frontSprite = img);
-  loadImage(`back/${back.file}`,   img=> backSprite  = img);
+  frontName    = pokemonList[i].name;
+  backName     = pokemonList[j].name;
+  hpFront      = random(0.3, 1);
+  hpBack       = random(0.3, 1);
+  frontSprite  = frontImages[pokemonList[i].file];
+  backSprite   = backImages [pokemonList[j].file];
 }
 
-// manual swap for testing
+// manual swap on spacebar
 function keyPressed() {
   if (key === ' ') {
     loadRandomPokemon();
     lastSwapTime = millis();
   }
 }
+
