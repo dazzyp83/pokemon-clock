@@ -4,21 +4,18 @@
   <meta charset="UTF-8" />
   <title>Pokémon Clock</title>
   <style>
-    /* center & black bg */
     html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #000;
+      margin:0; padding:0;
+      width:100%; height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      background:#000;
     }
-    /* scale the 160×128 canvas to 480×384, pixel-perfect */
     canvas {
-      width: 480px;            /* 160 × 3 */
-      height: 384px;           /* 128 × 3 */
+      /* stretch the 160×128 p5 canvas to 480×384 on screen */
+      width: 480px;
+      height: 384px;
       image-rendering: pixelated;
       display: block;
     }
