@@ -2,17 +2,27 @@ let bg, gameboyFont;
 let frontSprite, backSprite;
 let frontName, backName;
 let hpFront, hpBack;
-
+let size_ratio = 1.5;
 let lastSwapTime = 0;
 const swapInterval = 30 * 60 * 1000; // 30 minutes
 
-// … your full 151‐entry pokemonList as before …
+// 1) Full Poké list
+const pokemonList = [
+  { file:'bulbasaur.png', name:'BULBASAUR' },
+  { file:'ivysaur.png',   name:'IVYSAUR'   },
+  { file:'venusaur.png',  name:'VENUSAUR'  },
+  { file:'charmander.png',name:'CHARMANDER'},
+  /* … make sure you include every one of the 151 entries … */
+  { file:'mewtwo.png',    name:'MEWTWO'    },
+  { file:'mew.png',       name:'MEW'       }
+];
 
-// lookup tables
-let frontImages = {}, backImages = {};
+// 2) Lookup tables for the preloaded images
+let frontImages = {};
+let backImages  = {};
 
 function preload() {
-  bg          = loadImage('bg.png');
+    bg          = loadImage('bg.png');
   gameboyFont = loadFont('PressStart2P-Regular.ttf');
   for (let p of pokemonList) {
     frontImages[p.file] = loadImage(`front/${p.file}`);
@@ -21,10 +31,9 @@ function preload() {
 }
 
 function setup() {
-  pixelDensity(1);
-  // make the actual displayed canvas 3× larger:
-  createCanvas(160 * 3, 128 * 3);
-  noSmooth();
+   pixelDensity(1);       // 1:1 mapping so pixels stay crisp
+  createCanvas((160 * size_ratio), (128* size_ratio)); // your “virtual” resolution
+   noSmooth();
   textFont(gameboyFont);
 
   loadRandomPokemon();
@@ -34,83 +43,86 @@ function setup() {
 function draw() {
   background(0);
 
-  // auto‐swap
+  // auto‐swap every 30 minutes
   if (millis() - lastSwapTime > swapInterval) {
     loadRandomPokemon();
     lastSwapTime = millis();
   }
 
-  // now everything in here is scaled up 3×
-  push();
-  scale(3);
+  // draw background and sprites in 160×128 coordinates
+  image(bg, 0, 0, (160*size_ratio), (128*size_ratio));
+  image(backSprite,  (11*size_ratio), (32*size_ratio), (50*size_ratio), (50*size_ratio));
+  image(frontSprite,(104*size_ratio), (10*size_ratio), (40*size_ratio), (40*size_ratio));
 
-    // draw as if 160×128
-    image(bg,   0,    0, 160, 128);
-    image(backSprite,  11, 32, 50, 50);
-    image(frontSprite,104, 10, 40, 40);
-    drawNames();
-    drawHp();
-    drawClock();
+   // draw the UI
+  drawNames();
+  drawHp();
+  drawClock();
 
-  pop();
-}
+  }
 
 function drawNames() {
-  textSize(6);
+  textSize(6*size_ratio);
   noStroke();
   fill(0);
-  // FRONT name
-  textAlign(LEFT, TOP);
-  let nm = frontName;
-  while (textWidth(nm) > 60) nm = nm.slice(0, -1);
-  text(nm, 12, 5);
 
-  // BACK name
-  textAlign(LEFT, TOP);
-  let w = textWidth(backName);
-  text(backName, 147 - w, 55);
+  // FRONT name (trim to 60px max)
+    textAlign(LEFT, TOP);
+{
+    let nm = frontName;
+    while (textWidth(nm) > 60) nm = nm.slice(0, -1);
+    text(nm, 12*size_ratio, 5*size_ratio);
+  }
+    // BACK name (right‐justify at x=147)
+
+textAlign(LEFT, TOP);
+  {
+    let w = textWidth(backName);
+    text(backName, (147 - w)*size_ratio, 55*size_ratio);
+  }
 }
 
 function drawHp() {
-  textSize(6);
+  textSize(6*size_ratio);
   fill(0);
   textAlign(RIGHT, TOP);
-  text('HP', 28, 16);
-  text('HP', 88, 65);
-  drawHpBar(30, 16, 50, 5, hpFront);
-  drawHpBar(90, 65, 50, 5, hpBack);
+  text('HP', 28*size_ratio, 16*size_ratio);
+  text('HP', 88*size_ratio, 65*size_ratio);
+  drawHpBar(30*size_ratio, 16*size_ratio, 50*size_ratio, 5*size_ratio, hpFront);
+  drawHpBar(90*size_ratio, 65*size_ratio, 50*size_ratio, 5*size_ratio, hpBack);
 }
 
 function drawClock() {
-  textSize(24);
+  textSize((24)*size_ratio);
   textAlign(CENTER, CENTER);
   fill(0);
-  let hrs = nf(hour(),  2),
-      mins= nf(minute(),2);
-  text(`${hrs}:${mins}`, 80, 104);
+  let hrs  = nf(hour(),   2),
+      mins = nf(minute(), 2);
+      text(`${hrs}:${mins}`, (80)*size_ratio, (104)*size_ratio);
 }
 
-function drawHpBar(x,y,w,h,pct) {
-  pct = constrain(pct,0,1);
-  noStroke(); fill(100);
-  rect(x, y, pct*w, h, h);
-  noFill(); stroke(0); strokeWeight(1);
+function drawHpBar(x, y, w, h, pct) {
+  pct = constrain(pct, 0, 1);
+   noStroke(); fill(100);
+  rect(x, y, pct * w, h, h);
+    noFill(); stroke(0); strokeWeight(1);
   rect(x, y, w, h, h);
 }
 
 function loadRandomPokemon() {
-  let i = floor(random(pokemonList.length)),
-      j;
-  do { j = floor(random(pokemonList.length)); } while (j===i);
+  let i = floor(random(pokemonList.length));
+  let j;
+  do { j = floor(random(pokemonList.length)); } while (j === i);
 
-  let f = pokemonList[i], b = pokemonList[j];
-  frontName   = f.name;
-  backName    = b.name;
-  hpFront     = random(0.3,1);
-  hpBack      = random(0.3,1);
-  frontSprite = frontImages[f.file];
-  backSprite  = backImages [b.file];
-}
+  let frontP = pokemonList[i],
+      backP  = pokemonList[j];
+  frontName   = frontP.name;
+  backName    = backP.name;
+  hpFront     = random(0.3, 1);
+  hpBack      = random(0.3, 1);
+  frontSprite = frontImages[frontP.file];
+  backSprite  = backImages [backP.file];
+  }
 
 function keyPressed() {
   if (key === ' ') {
