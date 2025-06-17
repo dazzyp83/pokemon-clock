@@ -2,7 +2,7 @@ let bg, gameboyFont;
 let frontSprite, backSprite;
 let frontName, backName;
 let hpFront, hpBack;
-let size_ratio = 1.5;
+let size_ratio = 2;
 let lastSwapTime = 0;
 const swapInterval = 30 * 60 * 1000; // 30 minutes
 
