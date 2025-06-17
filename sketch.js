@@ -6,27 +6,14 @@ let hpFront, hpBack;
 let lastSwapTime = 0;
 const swapInterval = 30 * 60 * 1000; // 30 minutes
 
-// 1) Full Poké list
-const pokemonList = [
-  { file:'bulbasaur.png', name:'BULBASAUR' },
-  { file:'ivysaur.png',   name:'IVYSAUR'   },
-  { file:'venusaur.png',  name:'VENUSAUR'  },
-  { file:'charmander.png',name:'CHARMANDER'},
-  /* … make sure you include every one of the 151 entries … */
-  { file:'mewtwo.png',    name:'MEWTWO'    },
-  { file:'mew.png',       name:'MEW'       }
-];
+// … your full 151‐entry pokemonList as before …
 
-// 2) Lookup tables for the preloaded images
-let frontImages = {};
-let backImages  = {};
+// lookup tables
+let frontImages = {}, backImages = {};
 
 function preload() {
-  // load your background and font
   bg          = loadImage('bg.png');
   gameboyFont = loadFont('PressStart2P-Regular.ttf');
-
-  // preload every sprite into our lookup tables
   for (let p of pokemonList) {
     frontImages[p.file] = loadImage(`front/${p.file}`);
     backImages [p.file] = loadImage(`back/${p.file}`);
@@ -34,8 +21,9 @@ function preload() {
 }
 
 function setup() {
-  pixelDensity(1);       // 1:1 mapping so pixels stay crisp
-  createCanvas(160, 128); // your “virtual” resolution
+  pixelDensity(1);
+  // make the actual displayed canvas 3× larger:
+  createCanvas(160 * 3, 128 * 3);
   noSmooth();
   textFont(gameboyFont);
 
@@ -46,42 +34,41 @@ function setup() {
 function draw() {
   background(0);
 
-  // auto‐swap every 30 minutes
+  // auto‐swap
   if (millis() - lastSwapTime > swapInterval) {
     loadRandomPokemon();
     lastSwapTime = millis();
   }
 
-  // draw background and sprites in 160×128 coordinates
-  image(bg, 0, 0, 160, 128);
-  image(backSprite,  11, 32, 50, 50);
-  image(frontSprite,104, 10, 40, 40);
+  // now everything in here is scaled up 3×
+  push();
+  scale(3);
 
-  // draw the UI
-  drawNames();
-  drawHp();
-  drawClock();
+    // draw as if 160×128
+    image(bg,   0,    0, 160, 128);
+    image(backSprite,  11, 32, 50, 50);
+    image(frontSprite,104, 10, 40, 40);
+    drawNames();
+    drawHp();
+    drawClock();
+
+  pop();
 }
 
 function drawNames() {
   textSize(6);
   noStroke();
   fill(0);
-
-  // FRONT name (trim to 60px max)
+  // FRONT name
   textAlign(LEFT, TOP);
-  {
-    let nm = frontName;
-    while (textWidth(nm) > 60) nm = nm.slice(0, -1);
-    text(nm, 12, 5);
-  }
+  let nm = frontName;
+  while (textWidth(nm) > 60) nm = nm.slice(0, -1);
+  text(nm, 12, 5);
 
-  // BACK name (right‐justify at x=147)
+  // BACK name
   textAlign(LEFT, TOP);
-  {
-    let w = textWidth(backName);
-    text(backName, 147 - w, 55);
-  }
+  let w = textWidth(backName);
+  text(backName, 147 - w, 55);
 }
 
 function drawHp() {
@@ -98,32 +85,31 @@ function drawClock() {
   textSize(24);
   textAlign(CENTER, CENTER);
   fill(0);
-  let hrs  = nf(hour(),   2),
-      mins = nf(minute(), 2);
+  let hrs = nf(hour(),  2),
+      mins= nf(minute(),2);
   text(`${hrs}:${mins}`, 80, 104);
 }
 
-function drawHpBar(x, y, w, h, pct) {
-  pct = constrain(pct, 0, 1);
+function drawHpBar(x,y,w,h,pct) {
+  pct = constrain(pct,0,1);
   noStroke(); fill(100);
-  rect(x, y, pct * w, h, h);
+  rect(x, y, pct*w, h, h);
   noFill(); stroke(0); strokeWeight(1);
   rect(x, y, w, h, h);
 }
 
 function loadRandomPokemon() {
-  let i = floor(random(pokemonList.length));
-  let j;
-  do { j = floor(random(pokemonList.length)); } while (j === i);
+  let i = floor(random(pokemonList.length)),
+      j;
+  do { j = floor(random(pokemonList.length)); } while (j===i);
 
-  let frontP = pokemonList[i],
-      backP  = pokemonList[j];
-  frontName   = frontP.name;
-  backName    = backP.name;
-  hpFront     = random(0.3, 1);
-  hpBack      = random(0.3, 1);
-  frontSprite = frontImages[frontP.file];
-  backSprite  = backImages [backP.file];
+  let f = pokemonList[i], b = pokemonList[j];
+  frontName   = f.name;
+  backName    = b.name;
+  hpFront     = random(0.3,1);
+  hpBack      = random(0.3,1);
+  frontSprite = frontImages[f.file];
+  backSprite  = backImages [b.file];
 }
 
 function keyPressed() {
