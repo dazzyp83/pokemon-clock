@@ -35,7 +35,7 @@ function preload() {
 
 function setup() {
   pixelDensity(1);       // 1:1 mapping so pixels stay crisp
-  createCanvas(160, 128); // your “virtual” resolution
+  createCanvas(500,500); // your “virtual” resolution
   noSmooth();
   textFont(gameboyFont);
 
